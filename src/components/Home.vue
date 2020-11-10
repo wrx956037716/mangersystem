@@ -1,20 +1,84 @@
 <template>
-  <div>
-    <el-button type="info" @click="logout">退出</el-button>
-  </div>
+  <el-container class="home-container">
+    <el-header>
+      <div>
+        <img src="../assets/img/logo.png" alt="">
+        <span>锐star商品后台管理系统</span>
+      </div>
+      <el-button type="info" @click="logout">退出</el-button>
+    </el-header>
+    <el-container>
+      <el-aside :width="isCollapse ? '64px' : '200px'">
+        <div class="toggle-button" @click="toggleCollapse">|||</div>
+        <el-menu
+          background-color="#333744"
+          text-color="#fff"
+          active-text-color="#409BFF"
+          unique-opened
+          :collapse="isCollapse"
+          :collapse-transition="false"
+          router
+          :default-active="activePath"
+        >
+          <el-submenu :index="item.id+''" v-for="item in menulist" :key="item.id">
+            <template slot="title">
+              <i :class="iconsObj[item.id]"></i>
+              <span>{{item.authName}}</span>
+            </template>
+
+            <el-menu-item :index="'/'+subItem.path" v-for="subItem in item.children" :key="subItem.id" @click="saveNavState('/' + subItem.path)">
+              <template slot="title">
+                <i class="el-icon-menu"></i>
+                <span>{{subItem.authName}}</span>
+              </template>
+            </el-menu-item>
+          </el-submenu>
+        </el-menu>
+      </el-aside>
+      <el-main>
+        <router-view></router-view>
+      </el-main>
+    </el-container>
+  </el-container>
 </template>
 
 <script>
   export default {
     data() {
       return {
-        
-    }
+        menulist: [],
+        iconsObj: {
+          '125': 'iconfont icon-user',
+          '103': 'iconfont icon-tijikongjian',
+          '101': 'iconfont icon-shangpin',
+          '102': 'iconfont icon-danju',
+          '145': 'iconfont icon-baobiao'
+        },
+        isCollapse:false,
+        activePath: ''
+      }
+    },
+    created() {
+      this.getMenuList()
+      this.activePath = window.sessionStorage.getItem('activePath')
     },
     methods: {
       logout() {
         window.sessionStorage.clear()
         this.$router.push('/login')
+      },
+      async getMenuList() {
+        const { data: res } = await this.$http.get('menus')
+        if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
+        this.menulist = res.data
+        console.log(res)
+      },
+      toggleCollapse(){
+        this.isCollapse=!this.isCollapse
+      },
+      saveNavState(activePath){
+          window.sessionStorage.setItem('activePath',activePath)
+          this.activePath=activePath
       }
     }
 
@@ -23,54 +87,50 @@
 </script>
 
 <style lang="less" scoped>
-  .login_container {
-    background-color: #2b4b6b;
+  .home-container {
     height: 100%;
   }
 
-  .login_box {
-    width: 450px;
-    height: 300px;
-    background-color: white;
-    border-radius: 3px;
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
+  .el-header {
+    background-color: #373d41;
+    display: flex;
+    justify-content: space-between;
+    padding-left: 0;
+    align-items: center;
+    color: white;
+    font-size: 20px;
 
-    .avatar_box {
-      height: 130px;
-      width: 130px;
-      border: 1px solid #eee;
-      border-radius: 50%;
-      padding: 10px;
-      box-shadow: 0 0 10px #ddd;
-      position: absolute;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background-color: #fff;
+    > div {
+      display: flex;
+      align-items: center;
 
-      img {
-        width: 100%;
-        height: 100%;
-        border-radius: 50%;
-        background-color: #eee;
+      span {
+        margin-left: 15px;
       }
     }
-
   }
 
-  .btns {
-    display: flex;
-    justify-content: flex-end;
+  .el-aside {
+    background-color: #333744;
+    .el-menu{
+      border-right: none;
+    }
   }
 
-  .login_form {
-    position: absolute;
-    bottom: 0;
-    width: 100%;
-    padding: 0 20px;
-    box-sizing: border-box;
+  .el-main {
+    background-color: #eaedf1;
   }
 
+  .iconfont {
+    margin-right: 10px;
+  }
+  .toggle-button {
+    background-color: #4a5064;
+    font-size: 10px;
+    line-height: 24px;
+    color: #fff;
+    text-align: center;
+    letter-spacing: 0.2em;
+    cursor: pointer;
+  }
 </style>
