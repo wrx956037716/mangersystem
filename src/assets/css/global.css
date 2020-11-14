@@ -19,3 +19,10 @@ body,
   margin-top: 15px;
   font-size: 12px;
 }
+.el-steps{
+  margin: 15px;
+}
+
+.ql-editor{
+  min-height: 300px;
+}
